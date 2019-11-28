@@ -71,7 +71,7 @@ class SearchInputState extends State {
         children: <Widget>[
           Icon(
             Icons.search,
-            color: Colors.black,
+            color: Theme.of(context).hintColor,
           ),
           SizedBox(
             width: 8,
@@ -79,10 +79,11 @@ class SearchInputState extends State {
           Expanded(
             child: TextField(
               decoration: InputDecoration(
-                hintText: S.of(context)?.search_place ?? 'Search place',
+                hintText: S.of(context)?.search_place ?? 'Cari Lokasi . . .',
                 border: InputBorder.none,
               ),
               controller: editController,
+              textInputAction: TextInputAction.search,
               onChanged: (value) {
                 setState(() {
                   hasSearchEntry = value.isNotEmpty;
@@ -97,7 +98,7 @@ class SearchInputState extends State {
               ? GestureDetector(
                   child: Icon(
                     Icons.clear,
-                    color: Colors.black,
+                    color: Theme.of(context).hintColor
                   ),
                   onTap: () {
                     editController.clear();
@@ -109,10 +110,10 @@ class SearchInputState extends State {
               : SizedBox(),
         ],
       ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: Colors.grey[100],
-      ),
+      // decoration: BoxDecoration(
+      //   borderRadius: BorderRadius.circular(16),
+      //   color: Colors.grey[100],
+      // ),
     );
   }
 }

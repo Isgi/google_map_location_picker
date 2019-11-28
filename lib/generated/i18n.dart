@@ -27,7 +27,7 @@ class S implements WidgetsLocalizations {
   String get ok => "Ok";
   String get please_check_your_connection => "Please check your connection";
   String get please_make_sure_you_enable_gps_and_try_again => "Please make sure you enable GPS and try again";
-  String get search_place => "Search place";
+  String get search_place => "Cari Lokasi . . .";
   String get server_error => "Server error";
 }
 

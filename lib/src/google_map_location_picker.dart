@@ -125,21 +125,12 @@ class LocationPickerState extends State<LocationPicker> {
             color: Colors.white,
             child: Row(
               children: <Widget>[
-                SizedBox(
-                  height: 24,
-                  width: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                  ),
-                ),
-                SizedBox(
-                  width: 24,
-                ),
                 Expanded(
                   child: Text(
-                    "Finding place...",
+                    "Sedang mencari Lokasi ...",
                     style: TextStyle(
                       fontSize: 16,
+                      color: Theme.of(context).hintColor
                     ),
                   ),
                 )
@@ -365,7 +356,12 @@ class LocationPickerState extends State<LocationPicker> {
         return Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.white,
-            iconTheme: IconThemeData(color: Colors.black),
+            leading: IconButton(
+              padding: EdgeInsets.only(left: 10.0),
+              alignment: Alignment.centerLeft,
+              onPressed: () => Navigator.pop(context),
+              icon: Icon(Icons.arrow_back),
+            ),
             key: appBarKey,
             title: SearchInput(
               (input) => searchPlace(input),

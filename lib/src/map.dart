@@ -8,11 +8,13 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_map_location_picker/generated/i18n.dart';
 import 'package:google_map_location_picker/src/providers/location_provider.dart';
+import 'package:google_map_location_picker/src/shimmer_address.dart';
 import 'package:google_map_location_picker/src/utils/loading_builder.dart';
 import 'package:google_map_location_picker/src/utils/log.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'model/location_result.dart';
 
@@ -131,6 +133,7 @@ class MapPickerState extends State<MapPicker> {
           ),
           _MapFabs(
             onToggleMapTypePressed: _onToggleMapTypePressed,
+            onTapCurrentLocation: _initCurrentLocation,
           ),
           pin(),
           locationCard(),
@@ -142,60 +145,151 @@ class MapPickerState extends State<MapPicker> {
   Widget locationCard() {
     return Align(
       alignment: Alignment.bottomCenter,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 8, 8, 24),
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Consumer<LocationProvider>(
-                builder: (context, locationProvider, _) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Flexible(
-                    flex: 20,
-                    child: FutureLoadingBuilder<String>(
-                        future: getAddress(locationProvider.lastIdleLocation),
-                        mutable: true,
-                        loadingIndicator: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            CircularProgressIndicator(),
-                          ],
-                        ),
-                        builder: (context, address) {
-                          _address = address;
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                address ?? 'Unnamed place',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
-                  ),
-                  Spacer(),
-                  FloatingActionButton(
-                    onPressed: () {
-                      Navigator.of(context).pop({
-                        'location': LocationResult(
-                          latLng: locationProvider.lastIdleLocation,
-                          address: _address,
-                        )
-                      });
-                    },
-                    child: Icon(Icons.arrow_forward, color: Colors.white),
-                  ),
-                ],
-              );
-            }),
-          ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20.0),
+          topRight: Radius.circular(20.0)
         ),
-      ),
+        child: Container(
+          height: 250.0,
+          width: double.infinity,
+          padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0, bottom: MediaQuery.of(context).viewInsets.bottom + 20.0),
+          color: Theme.of(context).canvasColor,
+          child: Consumer<LocationProvider>(
+            builder: (context, locationProvider, _) {
+              return FutureLoadingBuilder<String>(
+                future: getAddress(locationProvider.lastIdleLocation),
+                mutable: true,
+                loadingIndicator: Column(
+                  children: <Widget>[
+                    Shimmer.fromColors(
+                      baseColor: Theme.of(context).splashColor,
+                      highlightColor: Colors.white70,
+                      child: ShimmerAddress,
+                    )
+                  ],
+                ),
+                builder: (context, address) {
+                  _address = address;
+                  if (address == null || address == "") {
+                    return Center(
+                      child: Text(
+                        "Lokasi ini tidak diketahui.",
+                        style: Theme.of(context).textTheme.caption
+                      ),
+                    );
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 10.0),
+                            child: Text(address.split(",")[0], style: Theme.of(context).textTheme.title,),
+                          ),
+                          Text(
+                            address,
+                            style: TextStyle(
+                              fontSize: 18,
+                            ),
+                          )
+                        ]
+                      ),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(minWidth: double.infinity, minHeight: 54.0),
+                        child: RaisedButton(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5.0),
+                            side: BorderSide(
+                              color: Theme.of(context).primaryColor,
+                              width: 1.0
+                            )
+                          ),
+                          color: Theme.of(context).primaryColor,
+                          elevation: 0.0,
+                          focusElevation: 0.0,
+                          hoverElevation: 0.0,
+                          disabledElevation: 0.0,
+                          highlightElevation: 0.0,
+                          highlightColor: Theme.of(context).primaryColor,
+                          onPressed: () => Navigator.of(context).pop({
+                            'location': LocationResult(
+                              latLng: locationProvider.lastIdleLocation,
+                              address: _address,
+                            )
+                          }),
+                          child: Text(
+                            "Pilih Lokasi ini",
+                            style: Theme.of(context).textTheme.button,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                    ],
+                  );
+                }
+              );
+            }
+          )
+        )
+      )
+      // Padding(
+      //   padding: const EdgeInsets.fromLTRB(8, 8, 8, 24),
+      //   child: Card(
+      //     child: Padding(
+      //       padding: const EdgeInsets.all(8),
+      //       child: Consumer<LocationProvider>(
+      //           builder: (context, locationProvider, _) {
+      //         return Row(
+      //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //           children: <Widget>[
+      //             Flexible(
+      //               flex: 20,
+      //               child: FutureLoadingBuilder<String>(
+      //                   future: getAddress(locationProvider.lastIdleLocation),
+      //                   mutable: true,
+      //                   loadingIndicator: Row(
+      //                     mainAxisAlignment: MainAxisAlignment.center,
+      //                     children: <Widget>[
+      //                       CircularProgressIndicator(),
+      //                     ],
+      //                   ),
+      //                   builder: (context, address) {
+      //                     _address = address;
+      //                     return Column(
+      //                       mainAxisSize: MainAxisSize.min,
+      //                       children: [
+      //                         Text(
+      //                           address ?? 'Unnamed place',
+      //                           style: TextStyle(
+      //                             fontSize: 18,
+      //                           ),
+      //                         ),
+      //                       ],
+      //                     );
+      //                   }),
+      //             ),
+      //             Spacer(),
+      //             FloatingActionButton(
+      //               onPressed: () {
+      //                 Navigator.of(context).pop({
+      //                   'location': LocationResult(
+      //                     latLng: locationProvider.lastIdleLocation,
+      //                     address: _address,
+      //                   )
+      //                 });
+      //               },
+      //               child: Icon(Icons.arrow_forward, color: Colors.white),
+      //             ),
+      //           ],
+      //         );
+      //       }),
+      //     ),
+      //   ),
+      // ),
     );
   }
 
@@ -218,12 +312,12 @@ class MapPickerState extends State<MapPicker> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Icon(Icons.place, size: 56),
+          Icon(Icons.place, size: 56, color: Theme.of(context).primaryColor,),
           Container(
             decoration: ShapeDecoration(
               shadows: [
                 BoxShadow(
-                  color: Colors.black38,
+                  color: Theme.of(context).primaryColor,
                   blurRadius: 4,
                 ),
               ],
@@ -327,10 +421,12 @@ class _MapFabs extends StatelessWidget {
   const _MapFabs({
     Key key,
     @required this.onToggleMapTypePressed,
+    @required this.onTapCurrentLocation,
   })  : assert(onToggleMapTypePressed != null),
         super(key: key);
 
   final VoidCallback onToggleMapTypePressed;
+  final onTapCurrentLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -339,6 +435,15 @@ class _MapFabs extends StatelessWidget {
       margin: const EdgeInsets.only(top: 64, right: 8),
       child: Column(
         children: <Widget>[
+          Padding(
+            padding: EdgeInsets.only(bottom: 20.0),
+            child: FloatingActionButton(
+              onPressed: onTapCurrentLocation,
+              child: Icon(Icons.location_searching, color: Theme.of(context).hintColor),
+              mini: true,
+              backgroundColor: Theme.of(context).canvasColor,
+            ),
+          ),
           FloatingActionButton(
             onPressed: onToggleMapTypePressed,
             materialTapTargetSize: MaterialTapTargetSize.padded,
